@@ -2,8 +2,8 @@
 import csv
 import sqlite3
 
-csv_file = 'c:/Users/seas19062/Downloads/co2data.csv'
-database_file = 'c:/Users/seas19062/co2.db'
+csv_file = 'co2data.csv'
+database_file = 'co2.db'
 
 # current_countries
 
@@ -24,7 +24,7 @@ def parse_database():
     cur.execute(sql)
     current_countries = cur.fetchall()
 
-    sql = "SELECT SectorName from Sector"
+    sql = "SELECT * from Sector"
     cur.execute(sql)
     current_sectors = cur.fetchall()
 
@@ -46,14 +46,20 @@ def add_countries_and_sectors(countries, sectors):
     conn.commit()
     conn.close()
 
+def sector_to_sectorId(sector):
+    sectorId = [item[0] for item in current_sectors if item[1] == sector][0]
+    return sectorId
 
 def add_co2_data(data_to_add):
     conn = sqlite3.connect(database_file)
     cur = conn.cursor()
 
     for co2Item in data_to_add:
-        cur.execute('INSERT INTO Co2Data (ISO_CODE, Sector, Value, Year) VALUES (?,?,?,?);',
-                    (co2Item.iso_code, co2Item.sector, co2Item.value, co2Item.year, ))
+        sectorId = sector_to_sectorId(co2Item.sector)
+        # cur.execute('INSERT INTO Co2Data (ISO_CODE, Sector, Value, Year) VALUES (?,?,?,?);',
+        #             (co2Item.iso_code, co2Item.sector, co2Item.value, co2Item.year, ))
+        cur.execute('INSERT INTO Co2Data2 (iso_code, sectorId, value, year) VALUES (?,?,?,?);',
+                    (co2Item.iso_code, sectorId, co2Item.value, co2Item.year, ))
 
     conn.commit()
     conn.close()
